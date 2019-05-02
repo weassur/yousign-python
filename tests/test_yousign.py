@@ -1,7 +1,12 @@
 import pytest
 from unittest.mock import Mock, patch
 from yousign.yousign import YouSign, STAGING_URL, PRODUCTION_URL, CONTENT_TYPE
-from tests.mocks import users_response, create_procedure_response, create_file_response
+from tests.mocks import (
+    users_response,
+    create_procedure_response,
+    create_file_response,
+    create_member_response,
+)
 
 
 class TestYouSign:
@@ -71,7 +76,7 @@ class TestYouSign:
             )
             assert ret == create_procedure_response
 
-    def test_create_file(self):
+    def test_add_file(self):
         api_key = "fake-api-key"
         instance = YouSign(api_key=api_key)
         with patch("requests.post") as mock_post:
@@ -84,7 +89,7 @@ class TestYouSign:
             procedure = Mock(id="/procedures/XXXX")
             procedure.id = "/procedures/XXXX"
 
-            ret = instance.create_file(
+            ret = instance.add_file(
                 procedure=procedure, name=name, description=description, content=content
             )
             mock_post.assert_called_once_with(
@@ -102,3 +107,61 @@ class TestYouSign:
             )
             assert ret == create_file_response
 
+    def test_add_member(self):
+        api_key = "fake-api-key"
+        instance = YouSign(api_key=api_key)
+        first_name = "First Name"
+        last_name = "Last Name"
+        email = "email@domain.com"
+        phone_number = "+334226633"
+        procedure = Mock(id="/procedures/XXXX")
+        procedure.id = "/procedures/XXXX"
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 200
+            mock_post.return_value.json.return_value = create_file_response
+
+            ret = instance.add_member(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone_number=phone_number,
+                procedure=procedure,
+            )
+            mock_post.assert_called_once_with(
+                STAGING_URL + "/members",
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={
+                    "firstname": first_name,
+                    "lastname": last_name,
+                    "email": email,
+                    "phone": phone_number,
+                    "procedure": procedure.id,
+                },
+            )
+            assert ret == create_file_response
+
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            phone_number = "0344223322"
+            with pytest.raises(Exception):
+                ret = instance.add_member(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    phone_number=phone_number,
+                    procedure=procedure,
+                )
+            email = "fakeemail"
+            with pytest.raises(Exception):
+                ret = instance.add_member(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    phone_number=phone_number,
+                    procedure=procedure,
+                )
+            assert not mock_post.called

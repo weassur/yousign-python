@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from yousign.utils import (
+    check_email,
     check_status,
     BadRequestError,
     UnauthorizedError,
@@ -11,6 +12,14 @@ from yousign.utils import (
 
 
 class TestUtils:
+    def test_check_email(self):
+        assert check_email("real@email.com")
+        assert check_email("ReAl@EMAIL.com")
+        assert check_email("real+plus@email.com")
+        assert check_email("real2873@email.com")
+        assert check_email("fakeemail") is False
+        assert check_email("fakemail.com") is False
+
     def test_check_status(self):
         response = Mock()
         response.status_code = 200

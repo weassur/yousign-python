@@ -1,6 +1,7 @@
 black
 codecov
 coverage
+phonenumbers
 pylint
 pytest
 pytest-cov

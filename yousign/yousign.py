@@ -1,6 +1,7 @@
 import requests
+import phonenumbers
 
-from yousign.utils import check_status
+from yousign.utils import check_status, check_email
 
 STAGING_URL = "https://staging-api.yousign.com"
 PRODUCTION_URL = "https://api.yousign.com"
@@ -34,10 +35,33 @@ class YouSign:
         data = response.json()
         return data
 
-    def create_file(self, procedure, name, description, content, *args, **kwargs):
+    def add_file(self, procedure, name, description, content, *args, **kwargs):
         url = self.api_url + "/files"
-        params = {"name": name, "description": description, "content": content, "procedure": procedure.id}
+        params = {
+            "name": name,
+            "description": description,
+            "content": content,
+            "procedure": procedure.id,
+        }
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
         return data
+
+    def add_member(self, procedure, first_name, last_name, email, phone_number):
+        assert check_email(email)
+        phone = phonenumbers.parse(phone_number)
+        phone = phonenumbers.format_number(phone, phonenumbers.PhoneNumberFormat.E164)
+        url = self.api_url + "/members"
+        params = {
+            "firstname": first_name,
+            "lastname": last_name,
+            "email": email,
+            "phone": phone,
+            "procedure": procedure.id,
+        }
+        response = requests.post(url, headers=self._get_headers(), params=params)
+        check_status(response)
+        data = response.json()
+        return data
+

@@ -285,3 +285,56 @@ create_file_response = {
     "creator": "/users/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
     "sha256": "23203f9264161714cdb8d2f474b9b641e6a735f8cea4098c40a3cab8743bd749"
 }
+
+create_member_response = {
+  "id": "/members/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+  "user": "/users/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+  "type": "signer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "phone": "string",
+  "position": 0,
+  "createdAt": "2019-05-02T16:26:02.573Z",
+  "updatedAt": "2019-05-02T16:26:02.573Z",
+  "status": "pending",
+  "fileObjects": [
+    {
+      "id": "/file_objects/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+      "file": {
+        "id": "/files/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+        "name": "string",
+        "type": "signable",
+        "contentType": "application/pdf",
+        "description": "string",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "metadata": {
+          "key_1": "value_1",
+          "key_2": "value_2"
+        },
+        "company": "/companies/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+        "creator": "/users/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+        "sha256": "23203f9264161714cdb8d2f474b9b641e6a735f8cea4098c40a3cab8743bd749"
+      },
+      "page": 0,
+      "position": "400,700,500,800",
+      "fieldName": "string",
+      "mention": "Read and approuved",
+      "mention2 (internal)": "string",
+      "createdAt": "2019-05-02T16:26:02.573Z",
+      "updatedAt": "2019-05-02T16:26:02.573Z",
+      "executedAt": "2019-05-02T16:26:02.573Z",
+      "reason": "string"
+    }
+  ],
+  "comment": "string",
+  "procedure": "string",
+  "operationLevel": "none",
+  "operationCustomModes": [
+    "sms"
+  ],
+  "modeSmsConfiguration": {
+    "content": "Hello, your code for signature is {{code}}."
+  }
+}
