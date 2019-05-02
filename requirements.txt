@@ -1,0 +1,10 @@
+black
+codecov
+coverage
+pylint
+pytest
+pytest-cov
+pytest-testmon
+pytest-watch
+requests
+tox
