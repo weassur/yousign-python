@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 from yousign.yousign import YouSign, STAGING_URL, PRODUCTION_URL, CONTENT_TYPE
-from tests.mocks import users_response, create_procedure_response
+from tests.mocks import users_response, create_procedure_response, create_file_response
 
 
 class TestYouSign:
@@ -69,5 +69,36 @@ class TestYouSign:
                 },
                 params={"name": name, "description": description, "start": False},
             )
-        assert ret == create_procedure_response
+            assert ret == create_procedure_response
+
+    def test_create_file(self):
+        api_key = "fake-api-key"
+        instance = YouSign(api_key=api_key)
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 201
+            mock_post.return_value.json.return_value = create_file_response
+            name = "FileName.pdf"
+            description = "File description"
+            content = ""
+            procedure = Mock(id="/procedures/XXXX")
+            procedure.id = "/procedures/XXXX"
+
+            ret = instance.create_file(
+                procedure=procedure, name=name, description=description, content=content
+            )
+            mock_post.assert_called_once_with(
+                STAGING_URL + "/files",
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={
+                    "name": name,
+                    "description": description,
+                    "content": content,
+                    "procedure": procedure.id,
+                },
+            )
+            assert ret == create_file_response
 

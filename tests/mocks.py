@@ -268,3 +268,20 @@ create_procedure_response = {
     "relatedFilesEnable": True,
     "archive": False,
 }
+
+create_file_response = {
+    "id": "/files/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+    "name": "string",
+    "type": "signable",
+    "contentType": "application/pdf",
+    "description": "string",
+    "createdAt": "string",
+    "updatedAt": "string",
+    "metadata": {
+        "key_1": "value_1",
+        "key_2": "value_2"
+    },
+    "company": "/companies/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+    "creator": "/users/9d1ede2b-5687-4440-bdc8-dd0bc64f668c",
+    "sha256": "23203f9264161714cdb8d2f474b9b641e6a735f8cea4098c40a3cab8743bd749"
+}

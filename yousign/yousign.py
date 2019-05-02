@@ -33,3 +33,11 @@ class YouSign:
         check_status(response)
         data = response.json()
         return data
+
+    def create_file(self, procedure, name, description, content, *args, **kwargs):
+        url = self.api_url + "/files"
+        params = {"name": name, "description": description, "content": content, "procedure": procedure.id}
+        response = requests.post(url, headers=self._get_headers(), params=params)
+        check_status(response)
+        data = response.json()
+        return data
