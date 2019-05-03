@@ -58,12 +58,12 @@ class TestYouSign:
     def test_create_procedure(self):
         api_key = "fake-api-key"
         instance = YouSign(api_key=api_key)
+        name = "Procedure Name"
+        description = "procedure description"
         with patch("requests.post") as mock_post:
             mock_post.return_value = Mock(ok=True)
             mock_post.return_value.status_code = 201
             mock_post.return_value.json.return_value = create_procedure_response
-            name = "Procedure Name"
-            description = "procedure description"
 
             ret = instance.create_procedure(name=name, description=description)
             mock_post.assert_called_once_with(
@@ -76,21 +76,113 @@ class TestYouSign:
             )
             assert ret == create_procedure_response
 
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 201
+            mock_post.return_value.json.return_value = create_procedure_response
+            members = [
+                {
+                    "firstname": "John",
+                    "lastname": "Doe",
+                    "email": "john.doe@yousign.com",
+                    "phone": "+336XXXXXXXX",
+                    "fileObjects": [
+                        {
+                            "position": "0, 0, 100, 200",
+                            "page": 2,
+                            "file": "/files/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+                        }
+                    ],
+                },
+                {
+                    "user": "/users/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+                    "fileObjects": [
+                        {
+                            "page": 0,
+                            "file": "/files/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+                        }
+                    ],
+                },
+            ]
+            config = {
+                "email": {
+                    "member.started": [
+                        {
+                            "subject": "You have a new procedure !",
+                            "message": 'Hello <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag> ! <br><br> You have ben added to a procedure, please access it here : <tag data-tag-type="button" data-tag-name="url" data-tag-title="Access to documents">Access to documents</tag>',
+                            "to": ["@member"],
+                        }
+                    ],
+                    "procedure.started": [
+                        {
+                            "subject": "John, created a procedure your API have.",
+                            "message": "The content of this email is totally awesome.",
+                            "to": [
+                                "luke.skywalker@yousign.com",
+                                "princess.leila@yousign.com",
+                            ],
+                        }
+                    ],
+                }
+            }
+
+            ret = instance.create_procedure(
+                name=name, description=description, members=members, config=config
+            )
+            mock_post.assert_called_once_with(
+                STAGING_URL + "/procedures",
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={
+                    "name": name,
+                    "description": description,
+                    "start": False,
+                    "members": members,
+                    "config": config,
+                },
+            )
+            assert ret == create_procedure_response
+
+    def test_start_procedure(self):
+        api_key = "fake-api-key"
+        instance = YouSign(api_key=api_key)
+        procedure_id = '/procedures/procedure-id'
+        with patch("requests.put") as mock_put:
+            mock_put.return_value = Mock(ok=True)
+            mock_put.return_value.status_code = 200
+            mock_put.return_value.json.return_value = create_procedure_response
+            ret = instance.start_procedure(procedure_id=procedure_id)
+            mock_put.assert_called_once_with(
+                STAGING_URL + procedure_id,
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={
+                    "start": True,
+                },
+            )
+            assert ret == create_procedure_response
+
     def test_add_file(self):
         api_key = "fake-api-key"
         instance = YouSign(api_key=api_key)
+        name = "FileName.pdf"
+        description = "File description"
+        content = ""
         with patch("requests.post") as mock_post:
             mock_post.return_value = Mock(ok=True)
             mock_post.return_value.status_code = 201
             mock_post.return_value.json.return_value = create_file_response
-            name = "FileName.pdf"
-            description = "File description"
-            content = ""
-            procedure = Mock(id="/procedures/XXXX")
-            procedure.id = "/procedures/XXXX"
+            procedure_id = "/procedures/XXXX"
 
             ret = instance.add_file(
-                procedure=procedure, name=name, description=description, content=content
+                name=name,
+                content=content,
+                procedure_id=procedure_id,
+                description=description,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/files",
@@ -102,8 +194,24 @@ class TestYouSign:
                     "name": name,
                     "description": description,
                     "content": content,
-                    "procedure": procedure.id,
+                    "procedure": procedure_id,
                 },
+            )
+            assert ret == create_file_response
+
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 201
+            mock_post.return_value.json.return_value = create_file_response
+
+            ret = instance.add_file(name=name, content=content, description=description)
+            mock_post.assert_called_once_with(
+                STAGING_URL + "/files",
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={"name": name, "description": description, "content": content},
             )
             assert ret == create_file_response
 
@@ -114,8 +222,7 @@ class TestYouSign:
         last_name = "Last Name"
         email = "email@domain.com"
         phone_number = "+334226633"
-        procedure = Mock(id="/procedures/XXXX")
-        procedure.id = "/procedures/XXXX"
+        procedure_id = "/procedures/XXXX"
         with patch("requests.post") as mock_post:
             mock_post.return_value = Mock(ok=True)
             mock_post.return_value.status_code = 200
@@ -126,7 +233,7 @@ class TestYouSign:
                 last_name=last_name,
                 email=email,
                 phone_number=phone_number,
-                procedure=procedure,
+                procedure_id=procedure_id,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/members",
@@ -139,7 +246,7 @@ class TestYouSign:
                     "lastname": last_name,
                     "email": email,
                     "phone": phone_number,
-                    "procedure": procedure.id,
+                    "procedure": procedure_id,
                 },
             )
             assert ret == create_file_response
@@ -153,7 +260,7 @@ class TestYouSign:
                     last_name=last_name,
                     email=email,
                     phone_number=phone_number,
-                    procedure=procedure,
+                    procedure_id=procedure_id,
                 )
             email = "fakeemail"
             with pytest.raises(Exception):
@@ -162,6 +269,6 @@ class TestYouSign:
                     last_name=last_name,
                     email=email,
                     phone_number=phone_number,
-                    procedure=procedure,
+                    procedure_id=procedure_id,
                 )
             assert not mock_post.called

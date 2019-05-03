@@ -27,28 +27,49 @@ class YouSign:
         data = response.json()
         return data
 
-    def create_procedure(self, name, description, *args, **kwargs):
+    def create_procedure(
+        self, name, description, members=None, config=None, *args, **kwargs
+    ):
         url = self.api_url + "/procedures"
         params = {"name": name, "description": description, "start": False}
+        if members:
+            params["members"] = members
+        if config:
+            params["config"] = config
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
         return data
 
-    def add_file(self, procedure, name, description, content, *args, **kwargs):
+    def start_procedure(self, procedure_id):
+        url = self.api_url + procedure_id
+        params = {"start": True}
+        response = requests.put(url, headers=self._get_headers(), params=params)
+        check_status(response)
+        data = response.json()
+        return data
+
+    ## content should be a base64 encoded string, without the header
+    ## https://staging-dev.yousign.com/#/procedureCreate?id=add-files-to-my-procedure
+    ## use
+    ## import base64
+    ## with open(filename, 'rb') as upload_file:
+    ##     encoded_string = base64.b64encode(f.read())
+    def add_file(
+        self, name, content, procedure_id=None, description=None, *args, **kwargs
+    ):
         url = self.api_url + "/files"
-        params = {
-            "name": name,
-            "description": description,
-            "content": content,
-            "procedure": procedure.id,
-        }
+        params = {"name": name, "content": content}
+        if procedure_id:
+            params["procedure"] = procedure_id
+        if description:
+            params["description"] = description
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
         return data
 
-    def add_member(self, procedure, first_name, last_name, email, phone_number):
+    def add_member(self, procedure_id, first_name, last_name, email, phone_number):
         assert check_email(email)
         phone = phonenumbers.parse(phone_number)
         phone = phonenumbers.format_number(phone, phonenumbers.PhoneNumberFormat.E164)
@@ -58,10 +79,33 @@ class YouSign:
             "lastname": last_name,
             "email": email,
             "phone": phone,
-            "procedure": procedure.id,
+            "procedure": procedure_id,
         }
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
         return data
 
+    def add_signature_image(
+        self,
+        file_id,
+        member_id,
+        mention="Read and approved",
+        mention2="Signature",
+        page=0,
+        position=None,
+    ):
+        url = self.api_url + "/file_objects"
+        params = {
+            "file": file_id,
+            "member": member_id,
+            "mention": mention,
+            "mention2": mention2,
+            "page": page,
+        }
+        if position and page > 0:
+            params["position"] = position
+        response = requests.post(url, headers=self._get_headers(), params=params)
+        check_status(response)
+        data = response.json()
+        return data

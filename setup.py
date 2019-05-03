@@ -9,6 +9,6 @@ setup(
     author_email="thibaut@weassur.com",
     license="GPL 3.0",
     packages=["yousign"],
-    install_requires=["requests"],
+    install_requires=["requests", "phonenumbers"],
     zip_safe=False,
 )
