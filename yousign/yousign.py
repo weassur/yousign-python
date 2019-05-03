@@ -27,10 +27,24 @@ class YouSign:
         data = response.json()
         return data
 
-    def create_procedure(self, name, description, *args, **kwargs):
+    def create_procedure(
+        self, name, description, members=None, config=None, *args, **kwargs
+    ):
         url = self.api_url + "/procedures"
         params = {"name": name, "description": description, "start": False}
+        if members:
+            params["members"] = members
+        if config:
+            params["config"] = config
         response = requests.post(url, headers=self._get_headers(), params=params)
+        check_status(response)
+        data = response.json()
+        return data
+
+    def start_procedure(self, procedure_id):
+        url = self.api_url + procedure_id
+        params = {"start": True}
+        response = requests.put(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
         return data
