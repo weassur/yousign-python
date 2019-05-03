@@ -86,11 +86,13 @@ class TestYouSign:
             name = "FileName.pdf"
             description = "File description"
             content = ""
-            procedure = Mock(id="/procedures/XXXX")
-            procedure.id = "/procedures/XXXX"
+            procedure_id = "/procedures/XXXX"
 
             ret = instance.add_file(
-                procedure=procedure, name=name, description=description, content=content
+                procedure_id=procedure_id,
+                name=name,
+                description=description,
+                content=content,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/files",
@@ -102,7 +104,7 @@ class TestYouSign:
                     "name": name,
                     "description": description,
                     "content": content,
-                    "procedure": procedure.id,
+                    "procedure": procedure_id,
                 },
             )
             assert ret == create_file_response
@@ -114,8 +116,7 @@ class TestYouSign:
         last_name = "Last Name"
         email = "email@domain.com"
         phone_number = "+334226633"
-        procedure = Mock(id="/procedures/XXXX")
-        procedure.id = "/procedures/XXXX"
+        procedure_id = "/procedures/XXXX"
         with patch("requests.post") as mock_post:
             mock_post.return_value = Mock(ok=True)
             mock_post.return_value.status_code = 200
@@ -126,7 +127,7 @@ class TestYouSign:
                 last_name=last_name,
                 email=email,
                 phone_number=phone_number,
-                procedure=procedure,
+                procedure_id=procedure_id,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/members",
@@ -139,7 +140,7 @@ class TestYouSign:
                     "lastname": last_name,
                     "email": email,
                     "phone": phone_number,
-                    "procedure": procedure.id,
+                    "procedure": procedure_id,
                 },
             )
             assert ret == create_file_response
@@ -153,7 +154,7 @@ class TestYouSign:
                     last_name=last_name,
                     email=email,
                     phone_number=phone_number,
-                    procedure=procedure,
+                    procedure_id=procedure_id,
                 )
             email = "fakeemail"
             with pytest.raises(Exception):
@@ -162,6 +163,6 @@ class TestYouSign:
                     last_name=last_name,
                     email=email,
                     phone_number=phone_number,
-                    procedure=procedure,
+                    procedure_id=procedure_id,
                 )
             assert not mock_post.called
