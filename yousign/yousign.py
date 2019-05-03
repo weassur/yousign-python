@@ -41,14 +41,15 @@ class YouSign:
     ## import base64
     ## with open(filename, 'rb') as upload_file:
     ##     encoded_string = base64.b64encode(f.read())
-    def add_file(self, procedure_id, name, description, content, *args, **kwargs):
+    def add_file(
+        self, name, content, procedure_id=None, description=None, *args, **kwargs
+    ):
         url = self.api_url + "/files"
-        params = {
-            "name": name,
-            "description": description,
-            "procedure": procedure_id,
-            "content": content,
-        }
+        params = {"name": name, "content": content}
+        if procedure_id:
+            params["procedure"] = procedure_id
+        if description:
+            params["description"] = description
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
@@ -94,4 +95,3 @@ class YouSign:
         check_status(response)
         data = response.json()
         return data
-

@@ -79,20 +79,20 @@ class TestYouSign:
     def test_add_file(self):
         api_key = "fake-api-key"
         instance = YouSign(api_key=api_key)
+        name = "FileName.pdf"
+        description = "File description"
+        content = ""
         with patch("requests.post") as mock_post:
             mock_post.return_value = Mock(ok=True)
             mock_post.return_value.status_code = 201
             mock_post.return_value.json.return_value = create_file_response
-            name = "FileName.pdf"
-            description = "File description"
-            content = ""
             procedure_id = "/procedures/XXXX"
 
             ret = instance.add_file(
-                procedure_id=procedure_id,
                 name=name,
-                description=description,
                 content=content,
+                procedure_id=procedure_id,
+                description=description,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/files",
@@ -106,6 +106,22 @@ class TestYouSign:
                     "content": content,
                     "procedure": procedure_id,
                 },
+            )
+            assert ret == create_file_response
+
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = Mock(ok=True)
+            mock_post.return_value.status_code = 201
+            mock_post.return_value.json.return_value = create_file_response
+
+            ret = instance.add_file(name=name, content=content, description=description)
+            mock_post.assert_called_once_with(
+                STAGING_URL + "/files",
+                headers={
+                    "Content-Type": CONTENT_TYPE,
+                    "Authorization": "Bearer {api_key}".format(api_key=api_key),
+                },
+                params={"name": name, "description": description, "content": content},
             )
             assert ret == create_file_response
 
