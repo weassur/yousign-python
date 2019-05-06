@@ -1,6 +1,12 @@
 import pytest
 from unittest.mock import Mock, patch
-from yousign.yousign import YouSign, STAGING_URL, PRODUCTION_URL, CONTENT_TYPE
+from yousign.yousign import (
+    YouSign,
+    STAGING_URL,
+    PRODUCTION_URL,
+    CONTENT_TYPE,
+    DEFAULT_CONFIG,
+)
 from tests.mocks import (
     users_response,
     create_procedure_response,
@@ -29,6 +35,24 @@ class TestYouSign:
             # fmt: off
             instance = YouSign(foo="bar")  #pylint: disable=E1120,E1123
             # fmt: on
+
+        webhook_url = "https://webhook.com"
+        instance = YouSign(
+            api_key=api_key, production=False, webhook_url=webhook_url
+        )
+        default_config = DEFAULT_CONFIG
+        default_config["webhook"] = (
+            {
+                "member.finished": [
+                    {
+                        "url": webhook_url,
+                        "method": "GET",
+                        "headers": {"X-Custom-Header": "Test value"},
+                    }
+                ]
+            },
+        )
+        assert instance.default_config == default_config
 
     def test_get_headers(self):
         api_key = "fake-api-key"
@@ -127,7 +151,11 @@ class TestYouSign:
             }
 
             ret = instance.create_procedure(
-                name=name, description=description, members=members, config=config
+                name=name,
+                description=description,
+                members=members,
+                config=config,
+                start=True,
             )
             mock_post.assert_called_once_with(
                 STAGING_URL + "/procedures",
@@ -138,7 +166,7 @@ class TestYouSign:
                 params={
                     "name": name,
                     "description": description,
-                    "start": False,
+                    "start": True,
                     "members": members,
                     "config": config,
                 },
@@ -148,7 +176,7 @@ class TestYouSign:
     def test_start_procedure(self):
         api_key = "fake-api-key"
         instance = YouSign(api_key=api_key)
-        procedure_id = '/procedures/procedure-id'
+        procedure_id = "/procedures/procedure-id"
         with patch("requests.put") as mock_put:
             mock_put.return_value = Mock(ok=True)
             mock_put.return_value.status_code = 200
@@ -160,9 +188,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={
-                    "start": True,
-                },
+                params={"start": True},
             )
             assert ret == create_procedure_response
 
