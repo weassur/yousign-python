@@ -37,9 +37,7 @@ class TestYouSign:
             # fmt: on
 
         webhook_url = "https://webhook.com"
-        instance = YouSign(
-            api_key=api_key, production=False, webhook_url=webhook_url
-        )
+        instance = YouSign(api_key=api_key, production=False, webhook_url=webhook_url)
         default_config = DEFAULT_CONFIG
         default_config["webhook"] = (
             {
@@ -96,7 +94,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={"name": name, "description": description, "start": False},
+                json={"name": name, "description": description, "start": False},
             )
             assert ret == create_procedure_response
 
@@ -163,7 +161,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={
+                json={
                     "name": name,
                     "description": description,
                     "start": True,
@@ -188,7 +186,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={"start": True},
+                json={"start": True},
             )
             assert ret == create_procedure_response
 
@@ -216,7 +214,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={
+                json={
                     "name": name,
                     "description": description,
                     "content": content,
@@ -237,7 +235,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={"name": name, "description": description, "content": content},
+                json={"name": name, "description": description, "content": content},
             )
             assert ret == create_file_response
 
@@ -267,7 +265,7 @@ class TestYouSign:
                     "Content-Type": CONTENT_TYPE,
                     "Authorization": "Bearer {api_key}".format(api_key=api_key),
                 },
-                params={
+                json={
                     "firstname": first_name,
                     "lastname": last_name,
                     "email": email,
