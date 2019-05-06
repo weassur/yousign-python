@@ -13,7 +13,7 @@ DEFAULT_CONFIG = {
         "member.started": [
             {
                 "subject": "Nouveaux documents à signer",
-                "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Un nouveau document est disponible pour signature : <tag data-tag-type="button" data-tag-name="url" data-tag-title="Acceder">Accéder aux documents</tag>',
+                "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Un nouveau document est disponible pour signature : <br><br> <tag data-tag-type="button" data-tag-name="url" data-tag-title="Acceder">Accéder aux documents</tag>',
                 "to": ["@member"],
             }
         ]
@@ -28,7 +28,7 @@ DEFAULT_CONFIG = {
                         {
                             "to": ["@members.auto"],
                             "subject": "[RAPPEL] Vous avez des documents à signer",
-                            "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Vous n\'avez pas encore signé des documents : <tag data-tag-type="button" data-tag-name="url" data-tag-title="Access to documents">Accéder aux documents</tag>',
+                            "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Vous n\'avez pas encore signé des documents : <br><br><tag data-tag-type="button" data-tag-name="url" data-tag-title="Access to documents">Accéder aux documents</tag>',
                         }
                     ]
                 }
@@ -75,19 +75,19 @@ class YouSign:
         self, name, description, members=None, config=None, start=False, *args, **kwargs
     ):
         url = self.api_url + "/procedures"
-        params = {"name": name, "description": description, "start": start}
+        data = {"name": name, "description": description, "start": start}
         if members:
-            params["members"] = members
-            params["config"] = config or self.default_config
-        response = requests.post(url, headers=self._get_headers(), params=params)
+            data["members"] = members
+            data["config"] = config or self.default_config
+        response = requests.post(url, headers=self._get_headers(), json=data)
         check_status(response)
         data = response.json()
         return data
 
     def start_procedure(self, procedure_id):
         url = self.api_url + procedure_id
-        params = {"start": True}
-        response = requests.put(url, headers=self._get_headers(), params=params)
+        data = {"start": True}
+        response = requests.put(url, headers=self._get_headers(), json=data)
         check_status(response)
         data = response.json()
         return data
@@ -102,12 +102,12 @@ class YouSign:
         self, name, content, procedure_id=None, description=None, *args, **kwargs
     ):
         url = self.api_url + "/files"
-        params = {"name": name, "content": content}
+        data = {"name": name, "content": content}
         if procedure_id:
-            params["procedure"] = procedure_id
+            data["procedure"] = procedure_id
         if description:
-            params["description"] = description
-        response = requests.post(url, headers=self._get_headers(), params=params)
+            data["description"] = description
+        response = requests.post(url, headers=self._get_headers(), json=data)
         check_status(response)
         data = response.json()
         return data
@@ -117,14 +117,14 @@ class YouSign:
         phone = phonenumbers.parse(phone_number)
         phone = phonenumbers.format_number(phone, phonenumbers.PhoneNumberFormat.E164)
         url = self.api_url + "/members"
-        params = {
+        data = {
             "firstname": first_name,
             "lastname": last_name,
             "email": email,
             "phone": phone,
             "procedure": procedure_id,
         }
-        response = requests.post(url, headers=self._get_headers(), params=params)
+        response = requests.post(url, headers=self._get_headers(), json=data)
         check_status(response)
         data = response.json()
         return data
@@ -139,7 +139,7 @@ class YouSign:
         position=None,
     ):
         url = self.api_url + "/file_objects"
-        params = {
+        data = {
             "file": file_id,
             "member": member_id,
             "mention": mention,
@@ -147,8 +147,8 @@ class YouSign:
             "page": page,
         }
         if position and page > 0:
-            params["position"] = position
-        response = requests.post(url, headers=self._get_headers(), params=params)
+            data["position"] = position
+        response = requests.post(url, headers=self._get_headers(), json=data)
         check_status(response)
         data = response.json()
         return data
