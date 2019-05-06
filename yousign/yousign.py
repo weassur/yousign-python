@@ -8,11 +8,55 @@ PRODUCTION_URL = "https://api.yousign.com"
 
 CONTENT_TYPE = "application/json"
 
+DEFAULT_CONFIG = {
+    "email": {
+        "member.started": [
+            {
+                "subject": "Nouveaux documents à signer",
+                "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Un nouveau document est disponible pour signature : <tag data-tag-type="button" data-tag-name="url" data-tag-title="Acceder">Accéder aux documents</tag>',
+                "to": ["@member"],
+            }
+        ]
+    },
+    "reminders": [
+        {
+            "interval": 2,
+            "limit": 3,
+            "config": {
+                "email": {
+                    "reminder.executed": [
+                        {
+                            "to": ["@members.auto"],
+                            "subject": "[RAPPEL] Vous avez des documents à signer",
+                            "message": 'Bonjour <tag data-tag-type="string" data-tag-name="recipient.firstname"></tag> <tag data-tag-type="string" data-tag-name="recipient.lastname"></tag>, <br><br> Vous n\'avez pas encore signé des documents : <tag data-tag-type="button" data-tag-name="url" data-tag-title="Access to documents">Accéder aux documents</tag>',
+                        }
+                    ]
+                }
+            },
+        }
+    ],
+    "webhook": {},
+}
+
 
 class YouSign:
-    def __init__(self, api_key, production=False):
+    def __init__(self, api_key, production=False, webhook_url=None):
         self.api_key = api_key
         self.api_url = PRODUCTION_URL if production else STAGING_URL
+        self.webhook_url = webhook_url
+        self.default_config = DEFAULT_CONFIG
+        if webhook_url:
+            self.default_config["webhook"] = (
+                {
+                    "member.finished": [
+                        {
+                            "url": webhook_url,
+                            "method": "GET",
+                            "headers": {"X-Custom-Header": "Test value"},
+                        }
+                    ]
+                },
+            )
 
     def _get_headers(self):
         return {
@@ -28,14 +72,13 @@ class YouSign:
         return data
 
     def create_procedure(
-        self, name, description, members=None, config=None, *args, **kwargs
+        self, name, description, members=None, config=None, start=False, *args, **kwargs
     ):
         url = self.api_url + "/procedures"
-        params = {"name": name, "description": description, "start": False}
+        params = {"name": name, "description": description, "start": start}
         if members:
             params["members"] = members
-        if config:
-            params["config"] = config
+            params["config"] = config or self.default_config
         response = requests.post(url, headers=self._get_headers(), params=params)
         check_status(response)
         data = response.json()
